@@ -78,6 +78,7 @@ class MainActivity : ComponentActivity() {
                     var isDimming by remember { mutableStateOf(prefsManager.isDimmingActive) }
                     var dimmingLevel by remember { mutableStateOf(prefsManager.dimmingLevel) }
                     var isScheduleEnabled by remember { mutableStateOf(prefsManager.isScheduleEnabled) }
+                    var isShakeEnabled by remember { mutableStateOf(prefsManager.isShakeToRescueEnabled) }
                     
                     SetupScreen(
                         hasPermission = hasPerm,
@@ -97,6 +98,11 @@ class MainActivity : ComponentActivity() {
                         onScheduleToggle = {
                             isScheduleEnabled = it
                             prefsManager.isScheduleEnabled = it
+                        },
+                        isShakeEnabled = isShakeEnabled,
+                        onShakeToggle = {
+                            isShakeEnabled = it
+                            prefsManager.isShakeToRescueEnabled = it
                         },
                         prefsManager = prefsManager
                     )
@@ -154,6 +160,8 @@ fun SetupScreen(
     onDimmingLevelChange: (Float) -> Unit,
     isScheduleEnabled: Boolean,
     onScheduleToggle: (Boolean) -> Unit,
+    isShakeEnabled: Boolean,
+    onShakeToggle: (Boolean) -> Unit,
     prefsManager: PrefsManager
 ) {
     val context = LocalContext.current
@@ -194,9 +202,9 @@ fun SetupScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("• Adjustable Intensity Slider", style = MaterialTheme.typography.bodyMedium)
-                Text("• Shake to Rescue (Vigorous shake to OFF)", style = MaterialTheme.typography.bodyMedium)
+                Text("• Optional Shake to Rescue", style = MaterialTheme.typography.bodyMedium)
                 Text("• Automated Scheduling", style = MaterialTheme.typography.bodyMedium)
-                Text("• Persistent Settings (Survivies Reboot)", style = MaterialTheme.typography.bodyMedium)
+                Text("• Persistent Settings (Survives Reboot)", style = MaterialTheme.typography.bodyMedium)
             }
         }
 
@@ -256,7 +264,7 @@ fun SetupScreen(
                                     prefsManager.scheduleStartMinute = minute
                                     startHour = hour
                                     startMinute = minute
-                                }, startHour, startMinute, false).show()
+                                }, startHour, startMinute, true).show() // 24h Format = true
                             }) {
                                 Text(String.format(Locale.US, "Start: %02d:%02d", startHour, startMinute))
                             }
@@ -267,7 +275,7 @@ fun SetupScreen(
                                     prefsManager.scheduleEndMinute = minute
                                     endHour = hour
                                     endMinute = minute
-                                }, endHour, endMinute, false).show()
+                                }, endHour, endMinute, true).show() // 24h Format = true
                             }) {
                                 Text(String.format(Locale.US, "End: %02d:%02d", endHour, endMinute))
                             }
@@ -276,9 +284,28 @@ fun SetupScreen(
                 }
             }
             
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ---------- SHAKE TO RESCUE CARD ----------
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Shake to Rescue", style = MaterialTheme.typography.titleMedium)
+                    Switch(
+                        checked = isShakeEnabled,
+                        onCheckedChange = onShakeToggle
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Tip: Shake phone vigorously to instantly turn off dimming.",
+                text = "Tip: Shake phone vigorously to instantly turn off dimming (if enabled).",
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center
             )
